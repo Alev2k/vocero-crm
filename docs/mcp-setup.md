@@ -4,8 +4,8 @@ Los servidores MCP dan a Claude herramientas extra (navegador, GitHub, bases de 
 etc.). **No se instalan desde un archivo suelto**: se registran con el CLI `claude mcp add`
 o se declaran en `.mcp.json` (scope de proyecto). Este starter trae:
 
-- **`.mcp.json`** — arranca vacío (`{"mcpServers": {}}`). Lo que pongas aquí queda *scoped al
-  proyecto* y se comparte con quien clone el repo.
+- **`.mcp.json`** — gitignorado (config local de cada máquina/cliente). Arranca vacío
+  (`{"mcpServers": {}}`) y no se comparte con quien clone el repo.
 - **`.mcp.json.example`** — ejemplos listos: **Playwright** (navegador, para self-tests de
   UI) y **GitHub** (issues/PRs, encaja con `speckit-taskstoissues`).
 
@@ -48,9 +48,10 @@ Copia las entradas que necesites de `.mcp.json.example` a `.mcp.json`. Formato:
 ## Reglas de seguridad (importante)
 
 - **Nunca** pongas tokens en claro en `.mcp.json`. Usa interpolación `${VAR}` que se resuelve
-  desde tu entorno / `.env`.
-- Si por algún motivo metes un secreto directo, **gitignora `.mcp.json`** y deja solo
-  `.mcp.json.example` versionado (ver el bloque comentado en `.gitignore`).
+  desde tu entorno / `.env` — aunque el archivo esté gitignorado, es buena práctica por si
+  algún día decides versionarlo o compartirlo.
+- `.mcp.json` está gitignorado por defecto (ver `.gitignore`); lo único versionado es
+  `.mcp.json.example`, que documenta los servidores disponibles para quien clone el repo.
 - Los servidores remotos autenticados (los que requieren login interactivo) pueden **no
   estar disponibles en ejecuciones headless/cron** — tenlo en cuenta para automatizaciones.
 

@@ -5,10 +5,10 @@
 *.pem
 *.key
 
-# --- MCP local con tokens (si lo personalizas con secretos en claro) ---
-# .mcp.json se commitea SOLO si usa ${VAR} (sin tokens en claro). Si metes
-# secretos directos, ignóralo y deja únicamente .mcp.json.example.
-# .mcp.json
+# --- MCP local (config específica de cada máquina/cliente) ---
+# .mcp.json NO se versiona: cada agencia/dev lo arma localmente a partir de
+# .mcp.json.example (que sí se versiona, con ${VAR} y sin secretos en claro).
+.mcp.json
 
 # --- Dependencias / build (cuando el starter ya tenga app encima) ---
 node_modules/

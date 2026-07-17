@@ -20,6 +20,32 @@ Tiempo real por **SSE** (`/api/events`): heartbeat `: ping` ~25s, headers
 anti-buffering, catch-up por refetch con `since=`. Sin WebSockets, sin colas
 externas: el trabajo en segundo plano (agente, Laboratorio) es in-process.
 
+## Comandos
+
+```bash
+pnpm install                        # deps (pnpm@11, Node >=20)
+docker compose -f docker-compose.dev.yml up -d   # Postgres local (puerto 5432)
+pnpm db:migrate                     # aplica drizzle/ a la BD local
+pnpm dev                            # Next.js dev server
+
+pnpm typecheck                      # tsc --noEmit
+pnpm lint                           # eslint .
+pnpm test                           # vitest run (tests/unit/**/*.test.ts)
+pnpm test:watch                     # vitest watch
+pnpm vitest run tests/unit/tenant.test.ts        # un solo archivo
+pnpm vitest run -t "nombre del test"             # por nombre (regex)
+pnpm build                          # next build (standalone)
+
+pnpm db:generate                    # tras editar src/lib/db/schema.ts → nueva migración en drizzle/
+pnpm seed:demo                      # datos de demo (Ferretería El Martillo)
+```
+
+No hay runner automatizado de E2E: son guiones manuales en `tests/e2e/*.md`,
+conducidos con Playwright MCP contra `pnpm dev` con los mocks activos
+(`WA_MOCK_ENABLED=true`, `META_GRAPH_BASE_URL` → `/api/dev/wa-mock`,
+`OPENROUTER_BASE_URL` → `/api/dev/ai-mock`). Detalle de arranque del entorno de
+pruebas: `specs/001-vocero-core/quickstart.md`.
+
 ## Mapa del código (fronteras de modificación)
 
 | Quieres cambiar… | Toca… |
@@ -36,6 +62,16 @@ externas: el trabajo en segundo plano (agente, Laboratorio) es in-process.
 Los mocks del entorno de pruebas viven en `src/app/api/dev/` (wa-mock +
 ai-mock) tras un gate único (`src/lib/dev-guard.ts`): 404 incondicional en
 producción.
+
+**Turno del agente** (`src/server/ai/pipeline.ts`): `scheduleAgentTurn()` hace
+debounce/coalesce in-process por conversación (ráfagas → una sola respuesta,
+nunca dos turnos a la vez); `runAgentTurn()` arma el prompt (perfil + KB +
+etapas del pipeline), llama a `chatJson<AgentAction>` y ejecuta la acción
+devuelta (`reply` / `update_lead` / `move_stage` / `handoff`). El Laboratorio
+llama `runAgentTurn()` directo (sin debounce) sobre conversaciones `is_test`.
+Publica en el bus SSE (`src/server/events/bus.ts`, un `EventEmitter` por
+proceso, canal `org:<id>`) SIEMPRE después del commit de BD — el endpoint
+`/api/events` se suscribe y reenvía como Server-Sent Events.
 
 ## Reglas de la constitución (no negociables)
 
